@@ -23,14 +23,48 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navArgument
+import androidx.navigation.compose.navigate
+import androidx.navigation.compose.rememberNavController
+import com.example.androiddevchallenge.routing.Screen
+import com.example.androiddevchallenge.screens.DetailScreen
+import com.example.androiddevchallenge.screens.ListScreen
 import com.example.androiddevchallenge.ui.theme.MyTheme
+import dev.chrisbanes.accompanist.insets.ProvideWindowInsets
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
-            MyTheme {
-                MyApp()
+            ProvideWindowInsets {
+                MyTheme {
+                    val navController = rememberNavController()
+                    NavHost(
+                        navController = navController,
+                        startDestination = Screen.ListScreen.route
+                    ) {
+                        composable(route = Screen.ListScreen.route) {
+                            ListScreen(
+                                Screen.ListScreen.title,
+                                onDoggoClick = { id ->
+                                    val route = "${Screen.DetailScreen.routeWithoutArgs}$id"
+                                    navController.navigate(route)
+                                }
+                            )
+                        }
+                        composable(
+                            route = Screen.DetailScreen.route,
+                            listOf(navArgument("id") { type = NavType.IntType })
+                        ) {
+                            DetailScreen(it.arguments?.getInt("id") ?: 0, Screen.DetailScreen.title)
+                        }
+                    }
+                }
             }
         }
     }
